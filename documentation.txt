@@ -1,0 +1,212 @@
+
+
+
+
+CREATE USER REGISTER/ LOGIN
+
+In the Auth.js file, 
+const express = require("express");
+const router = express.Router();
+
+
+-- create a model for users 
+
+Harshing a password:
+-- install bcrypt then implement below in the function
+
+const salt =  bcrypt.genSaltSync(10);
+
+const harshedPassowrd = bcrypt.hashSync(req.body.password, salt);
+//now use the harshedPassowrd in the password to be 
+await userCollection.create({
+    username: req.body.username,
+    password: harshedPassowrd
+})
+
+
+module.exports = router;
+
+
+AUTHENTICATION USING BEARER TOKEN AND AUTHORIZATION
+
+create login route
+1. Check if user exist in db.
+2. Compare user details
+3. Accept or reject user if the details is correct or wrong respectiely.
+
+
+router.post("/login", async(req,res)=>{
+
+    1. taking user's login details (email address) to check if user exist
+    const userDetail = userCollection.findOne({username: req.body.username});
+    
+    //cheecking if user exisit in database
+
+    if (!userDetail) return res.send("User-not-found");
+
+
+    if user exist, check if the password is correct
+    
+    const doesPasswordMatch = bcrypt.compareSync(req.body.password, userDetail.password);
+
+    // the above compare the user input password and the one in the database
+
+    if (!doesPasswordMatch) return res.send('invalide credentials');
+
+    // The above would get the user password and compare with the password
+    in the DB if user is found. This however is not how login is done as 
+    the password would be sent back as it is. To send token instead, we use
+    jsonwebtoken (jwt). How to implement in the steps below.
+
+    install jsonwebtoken
+
+    decide what among the user input you want to add to token
+    in this case id, username and password and have a secret key. 
+
+    import jsonwebtoken
+
+    in the login route, after comparing the passwords and logging user in 
+
+    jwt.sign is used to sign a token while verify is used to unsign it.
+
+    const token = jwt.sign({
+        userId: userDetail._id,
+        username: userDetail.username,
+        password: userDetail.password        
+    }, secret);
+
+    //token is the value that can be sent.
+
+    
+})
+
+
+CREATING A PROTECTED ROUTE 
+1. Write a middleware that proctect the controller
+
+function isUserLoggedIn(req, res, next){
+    const authorizationHeader = req.headers.authorization; 
+
+    let value =  authorizationHeader.split(");
+
+    let tokenType = value[0];
+
+    let tokenValue = value[1];
+
+    if (tokenType == "Bearer") {
+        const decoded = jwt.verify(tokenValue, process.env.SECRET);
+        console.log(decoded);
+    }
+    
+}
+
+GIVING ACCESS TO USER BY ROLE
+
+From shopItemSchema, add:
+user:{
+    type: mongoose.Schema.ObjectID,
+    ref: "users"
+}
+
+Then go to the shopItem.js file and to the isLoggedIn function
+if (tokenType == "Bearer") {
+        const decoded = jwt.verify(tokenValue, process.env.SECRET);
+
+        req.decoded = decoded;
+        //req is an object and here we are creating
+        a new property for req named decoded and passing the value of 
+        decoded above in to it.
+
+        next();
+        return;
+    }
+    
+
+    go to the controller for adding shopItem
+
+    AUTHORIZATION BY ROLE
+
+    in userSchema, add:
+
+    role:{
+        type: String,
+        enum: ["user","admin"],
+        default: "user" // for users that have registered before this 
+        for those that would not indicate role. 
+     }
+
+     then add the role in the register user controller and in token under
+     login controller under payload properties.
+
+     TO CREATE A ROUTE THAT CAN BE SPECIFIC ROLE (IN THIS CASE ADMIN)
+    route.get("/admin/all-tasks", async(req,res) =>{
+        const tasks = await itemCollection.find();
+        res.send(task);
+    });
+
+    then create a function for admins only
+
+    function adminsOnly(req, res, next){
+        if(req.decoded.role =="admin"){
+            next();
+        } else{
+            res.status(401).send("You are not and admin");
+        }
+    }
+
+    apply controller to the appropriate routes
+
+    
+    // move middleware function into a seperate file
+
+    ALLOWING USERS VIEW OWN PROFILE
+
+    -- make sure there is access to the necessary middleware (in this
+    case isUserLoggedIn to be sure user has logged in before viewing
+    profile)
+
+    -- from the auth file, import middleware
+    then create the route
+    router.get("/profile", isUserLoggedIn, async(req,res) =>{
+        try{
+            const user = await userCollection.findById(req.decoded.userId);
+            res.send(user);
+        }catch(error){
+            console.log(`Error: ${error}`)
+            res.status(500).send("Internal-server-error");
+        }
+    });
+
+
+TO RESTRICT THE DELETION OF TASK TO ONLY THE CREATOR OF THE TASK
+from the delete controller, 
+-- first check for the owner of the task
+route.delete("/delete/id", async(req,res)=>{
+    let note = await userCollection.findById(re.params.id);
+
+    if (req.decoded.userId != note.user) {
+        return res.status(401).send("You are not allowed to delete this task.");
+    }
+});
+
+
+TESTING AND DOCUMENTATION WITH POSTMAN
+ -- Create a workspace
+ --
+
+ DEPLOYING YOUR CODE ON RENDER.COM 
+ -- deploy your code to github
+ -- visit render.com 
+ -- login / create an account
+ -- From the dashboard click new and select webservice
+ -- build and deploy from github 
+ -- from connect to public repository add your github link/ url and continue
+ -- Name: add a name that you want 
+ -- build command: npm install  
+ -- start command : node index.js  ( go change from nodemon to node)
+ --  select advance : 
+ -- add the mongourl and secret values to the environment variable 
+ -- create web service
+ 
+
+
