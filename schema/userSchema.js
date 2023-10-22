@@ -21,11 +21,7 @@ const userSchema = mongoose.Schema({
     }
 }, {timestamps: true});
 
-<<<<<<< HEAD
-const userCollection = mongoose.model("user", userSchema);
-=======
 const userCollection = mongoose.model("users", userSchema);
->>>>>>> eeb454b (upload after making first correction)
 
 module.exports = {
     userCollection
