@@ -1,0 +1,33 @@
+{
+  "name": "KodeCamp-3.0-crud_operation",
+  "version": "1.0.0",
+  "description": "Simple shop item API using MongoDB and NodeJs",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index",
+    "serve": "node index"
+  },
+  "keywords": [
+    "get",
+    "post",
+    "delete",
+    "update",
+    "patch",
+    "put"
+  ],
+  "author": "Imole",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+<<<<<<< HEAD
+    "mongoose": "^7.5.3"
+=======
+    "mongoose": "^7.6.3"
+>>>>>>> eeb454b (upload after making first correction)
+  },
+  "devDependencies": {
+    "dotenv": "^16.3.1"
+  }
+}
